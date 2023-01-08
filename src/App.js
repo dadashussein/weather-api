@@ -1,45 +1,50 @@
 import "./App.css";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import Weather from "./components/Weather";
+import TopButton from "./components/TopButton";
+import Input from "./components/Input";
+import TimeAndLocation from "./components/TimeAndLocation";
+import TemperatureAndDetails from "./components/TemperatureAndDetails";
+import Forecast from "./components/Forecast";
+import getFormattedWeatherData from "./services/weatherServices";
 
 function App() {
-  const [inpCity, setInpCity] = useState("");
-  const [city, setCity] = useState("");
-  const [weather, setWeather] = useState("");
-
-  const getWeather = async () => {
-    try {
-      const response = await axios.get(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=ccce7999e11cd17fa951c988128c7c0c&units=metric`
-      );
-      setWeather(response.data);
-      console.log(response.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const [query, setQuery] = useState({ q: "baku" });
+  const [units, setUnits] = useState("metric");
+  const [weather, setWeather] = useState(null);
 
   useEffect(() => {
-    getWeather();
-  }, [city]);
+    const fetchWeather = async () => {
+      const data = await getFormattedWeatherData({ ...query, units }).then(
+        (data) => {
+          setWeather(data);
+        }
+      );
+    };
+    fetchWeather();
+  }, [query, units]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleChange = (e) => {
-    setInpCity(e.target.value);
+  const formatBackground = () => {
+    if (!weather) return "from-cyan-700 to-blue-700";
+    const threshold = units === "metric" ? 20 : 60;
+    if (weather.temp > threshold) return "from-yellow-400 to-red-500";
+    return "from-cyan-700 to-blue-700";
   };
 
-  const eventSubmit = (e) => {
-    e.preventDefault();
-    setCity(inpCity);
-    setInpCity("");
-  };
+  console.log(formatBackground());
   return (
-    <div className="container">
-      <Weather data={weather} />
-      <input className="input" type="text" onChange={handleChange} />
-      <button className="search__b" onClick={eventSubmit}>
-        Search
-      </button> <i class="uil uil-airplay"></i>
+    <div
+      className={` mx-auto max-w-screen-md my-1 sm:my-2 py-5 px-8 sm:px-32  bg-gradient-to-br from-cyan-700 to-blue-700 h-fit shadow-xl shadow-gray-400 ${formatBackground()}`}
+    >
+      <TopButton setQuery={setQuery} />
+      <Input setQuery={setQuery} units={units} setUnits={setUnits} />
+      {weather && (
+        <div>
+          <TimeAndLocation weather={weather} />
+          <TemperatureAndDetails weather={weather} />
+          <Forecast title="hourly forecast" items={weather.hourly} />
+          <Forecast title="daily forecast" items={weather.daily} />
+        </div>
+      )}
     </div>
   );
 }
