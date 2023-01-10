@@ -29,8 +29,6 @@ function App() {
     if (weather.temp > threshold) return "from-yellow-400 to-red-500";
     return "from-cyan-700 to-blue-700";
   };
-
-  console.log(formatBackground());
   return (
     <div
       className={` mx-auto max-w-screen-md my-1 sm:my-2 py-5 px-8 sm:px-32  bg-gradient-to-br from-cyan-700 to-blue-700 h-fit shadow-xl shadow-gray-400 ${formatBackground()}`}
